@@ -4,16 +4,19 @@ Do early-career workers lose ground in occupations most exposed to generative AI
 
 ## Reproduce
 
+All code lives in **[`ai_young_workers.ipynb`](ai_young_workers.ipynb)**, saved with its outputs so it can be read without running. To rebuild everything from a cold start:
+
 ```bash
-./run_all.sh   # creates .venv, downloads ~790 MB, rebuilds every result (~3 min after download)
+./run_all.sh   # creates .venv, downloads ~790 MB, executes the notebook (~2 min after download)
 ```
 
-| Step | Script | Output |
+| Section | What it does | Output |
 |---|---|---|
-| 1 | `src/01_download.py` | 79 monthly CPS files (Jan 2020 – Aug 2026) + exposure scores |
-| 2 | `src/02_exposure.py` | `data/clean/exposure_by_census_occ.csv` (525 of 526 Census occupations matched; Armed Forces excluded) |
-| 3 | `src/03_clean.py` | `data/clean/cps_2020_2026.parquet` + `results/cleaning_waterfall.csv` |
-| 4 | `src/04_analysis.py` | `results/fig1_*.png`, `fig2_*.png`, `event_study.csv`, `table2_pooled.csv` |
+| 1 | Download | 79 monthly CPS files (Jan 2020 – Aug 2026), exposure scores, BLS series |
+| 2 | Exposure crosswalk | `data/clean/exposure_by_census_occ.csv` (525 of 526 Census occupations matched; Armed Forces excluded) |
+| 3 | Parse and clean CPS | `data/clean/cps_2020_2026.parquet`, `results/cleaning_waterfall.csv` |
+| 4 | Validate against BLS | assertions: employment matches BLS in all 79 months; every worker has an exposure score |
+| 5–7 | Figures, event study, robustness | `results/fig1_*.png`, `fig2_*.png`, `event_study.csv`, `table2_pooled.csv` |
 
 Python 3.14; versions pinned in `requirements.txt`.
 
