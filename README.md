@@ -7,16 +7,18 @@ Do early-career workers lose ground in occupations most exposed to generative AI
 All code lives in **[`ai_young_workers.ipynb`](ai_young_workers.ipynb)**, saved with its outputs so it can be read without running. To rebuild everything from a cold start:
 
 ```bash
-./run_all.sh   # creates .venv, downloads ~790 MB, executes the notebook (~2 min after download)
+./run_all.sh   # creates .venv, downloads ~3.2 GB, executes the notebook (~3 min after download)
 ```
 
 | Section | What it does | Output |
 |---|---|---|
-| 1 | Download | 79 monthly CPS files (Jan 2020 – Aug 2026), exposure scores, BLS series |
+| 1 | Download | 79 monthly CPS files (Jan 2020 – Aug 2026), ACS PUMS 2021–2024, exposure scores (potential and observed), BLS series |
 | 2 | Exposure crosswalk | `data/clean/exposure_by_census_occ.csv` (525 of 526 Census occupations matched; Armed Forces excluded) |
 | 3 | Parse and clean CPS | `data/clean/cps_2020_2026.parquet`, `results/cleaning_waterfall.csv` |
 | 4 | Validate against BLS | assertions: employment matches BLS in all 79 months; every worker has an exposure score |
 | 5–7 | Figures, event study, robustness | `results/fig1_*.png`, `fig2_*.png`, `event_study.csv`, `table2_pooled.csv` |
+| 8 | Precision, influence, randomization inference, unemployment | printed in notebook |
+| 9 | Cross-validation: ACS and observed AI exposure | `data/clean/acs_2021_2024_employed.parquet`, `results/table3_cross_validation.csv` |
 
 Python 3.14; versions pinned in `requirements.txt`.
 
@@ -56,10 +58,35 @@ Main specification: occupation × quarter panel, 2021Q1 – 2026Q3; outcome = 22
 
 Baseline mean young share in 2022Q3: 7.74%, so (1) is a ~3.8% relative decline per s.d. of exposure. Pre-period event-study coefficients are all near zero (`results/event_study.csv`).
 
+### Further checks (Section 8)
+
+- **Weighting.** Unweighted, the coefficient is −0.09 (p = 0.73), but this is imprecision rather than absence: the median occupation has ~124 young-worker observations over six years. Restricting to occupations with ≥300 young observations, the unweighted estimate is −0.46 (p = 0.007).
+- **Influence.** Leave-one-out over the 30 largest occupations: −0.312 to −0.278, all p ≤ 0.002.
+- **Randomization inference.** 0 of 1,000 permutations of exposure across occupations produce |b| ≥ 0.294 (95th percentile of |b|: 0.165).
+- **Mechanism.** Unemployment by last-job exposure rose about equally for ages 22–25 (+0.58 pp) and 35–49 (+0.55 pp). A young-specific fall in employment share without a young-specific rise in unemployment points to **reduced entry** rather than displacement of young incumbents.
+
+### Cross-validation (Section 9)
+
+Independent survey (ACS 1-year PUMS, ~105,000 employed 22–25 year-olds per year) and an independent exposure measure (Anthropic Economic Index *observed* exposure; correlation with potential exposure 0.67 employment-weighted, Spearman 0.74).
+
+| Specification | Coef. | SE | p |
+|---|---|---|---|
+| CPS quarterly 2021Q1–2026Q3, potential exposure (baseline) | −0.294 | 0.089 | 0.001 |
+| CPS annual 2021–2024, potential exposure | −0.276 | 0.105 | 0.008 |
+| **ACS annual 2021–2024, potential exposure** | **−0.149** | 0.056 | 0.007 |
+| ACS, human-rated exposure | −0.164 | 0.063 | 0.009 |
+| ACS, excluding computer & math | −0.137 | 0.058 | 0.018 |
+| ACS, ages 22–29 | −0.060 | 0.076 | 0.430 |
+| CPS quarterly, observed exposure (AEI) | −0.183 | 0.070 | 0.009 |
+| ACS annual, observed exposure (AEI) | −0.122 | 0.049 | 0.013 |
+
+ACS by year relative to 2022: 2021 +0.046 (p = 0.47), 2023 −0.042 (p = 0.54), 2024 −0.210 (p = 0.006). ACS employment runs 2.5–3.8% above CPS, as expected from its broader universe (group quarters) and rolling reference period.
+
 ## Limitations
 
-- Exposure measures *potential* task exposure, not actual AI use.
-- Young-worker cells are small (~3,200 employed 22–25 year-olds per month); quarterly averaging reduces noise but individual quarters remain imprecise.
+- Potential and observed exposure point the same way, but neither identifies AI as the cause; the estimates are descriptive.
+- CPS young-worker cells are small (~3,200 employed 22–25 year-olds per month); individual quarters are imprecise, which is why the ACS replication matters.
+- The ACS ends in 2024; the 2025 file will show whether the larger 2026 CPS coefficients reflect a strengthening trend or noise.
 - High-exposure occupations may face other post-2022 shocks (interest rates, hiring cycles). Specification (5) removes the most obvious one, the tech layoff wave, but cannot rule out all of them.
 - (8) is mechanical, not a placebo: shares sum to 100, so a falling young share implies rising shares elsewhere.
 
@@ -67,4 +94,6 @@ Baseline mean young share in 2022Q3: 7.74%, so (1) is a ~3.8% relative decline p
 
 - Brynjolfsson, E., Chandar, B., & Chen, R. (2025). Canaries in the Coal Mine? Six Facts about the Recent Employment Effects of Artificial Intelligence. Stanford Digital Economy Lab working paper.
 - Eloundou, T., Manning, S., Mishkin, P., & Rock, D. (2024). GPTs are GPTs: Labor market impact potential of LLMs. *Science*, 384(6702).
+- Anthropic. Anthropic Economic Index, labor market impacts: occupation-level observed exposure (`labor_market_impacts/job_exposure.csv`), Hugging Face dataset `Anthropic/EconomicIndex`.
+- U.S. Census Bureau. American Community Survey 1-year Public Use Microdata Sample, 2021–2024.
 - U.S. Census Bureau. Current Population Survey basic monthly public-use files, 2020–2026.
