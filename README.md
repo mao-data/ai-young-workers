@@ -2,6 +2,8 @@
 
 Do early-career workers lose ground in occupations most exposed to generative AI after ChatGPT's release (30 Nov 2022)? Brynjolfsson, Chandar & Chen (2025) document such a decline using proprietary ADP payroll data. This project asks whether the pattern is visible in **fully public** data: the Census Bureau's Current Population Survey (CPS) basic monthly microdata, merged with the occupation-level GPT exposure scores of Eloundou et al. (2024).
 
+**Paper:** [`paper/paper.pdf`](paper/paper.pdf) (5 pages; LaTeX source in `paper/paper.tex`).
+
 ## Reproduce
 
 All code lives in **[`ai_young_workers.ipynb`](ai_young_workers.ipynb)**, saved with its outputs so it can be read without running. To rebuild everything from a cold start:

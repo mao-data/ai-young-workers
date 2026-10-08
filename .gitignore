@@ -2,3 +2,11 @@
 data/raw/
 data/clean/
 __pycache__/
+.DS_Store
+paper/*.aux
+paper/*.log
+paper/*.fls
+paper/*.fdb_latexmk
+paper/*.out
+paper/Wu_Moris_WritingSample.pdf
+paper/abstract.md
